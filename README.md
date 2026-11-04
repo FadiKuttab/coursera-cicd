@@ -30,6 +30,17 @@ parameters. A private GitHub repository also needs a Git authentication secret
 available to the `git-clone` task in the lab cluster. Credentials are not stored
 in this repository.
 
+After cloning the repository in the course Cloud IDE and configuring private
+Git access for the pipeline service account, run:
+
+```bash
+bash bin/run-lab-pipeline.sh
+```
+
+The script applies the Task, PVC, and Pipeline resources, runs the pipeline,
+checks the deployment and route, and prints the application's logs. Its output
+and the OpenShift console provide the evidence requested by the assignment.
+
 ## Run locally or in the lab IDE
 
 Use Python 3.9, then install dependencies and run the same checks as CI:
