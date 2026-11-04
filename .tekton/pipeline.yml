@@ -1,0 +1,83 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: counter-service-pipeline
+spec:
+  params:
+    - name: repo-url
+      type: string
+      description: Git URL of the counter service repository
+    - name: revision
+      type: string
+      default: main
+    - name: image
+      type: string
+      description: Image destination in a registry accessible to the cluster
+    - name: deployment-name
+      type: string
+      default: counter-service
+  workspaces:
+    - name: shared-workspace
+  tasks:
+    - name: cleanup
+      taskRef:
+        name: cleanup
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: fetch-source
+      runAfter: [cleanup]
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+    - name: lint
+      runAfter: [fetch-source]
+      taskRef:
+        name: flake8-lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: test
+      runAfter: [lint]
+      taskRef:
+        name: nose-tests
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: build-image
+      runAfter: [test]
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      params:
+        - name: IMAGE
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: deploy
+      runAfter: [build-image]
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      params:
+        - name: SCRIPT
+          value: |
+            if oc get deployment "$(params.deployment-name)" >/dev/null 2>&1; then
+              oc set image "deployment/$(params.deployment-name)" \
+                "$(params.deployment-name)=$(params.image)"
+            else
+              oc create deployment "$(params.deployment-name)" \
+                --image="$(params.image)"
+              oc expose deployment "$(params.deployment-name)" --port=8000
+              oc expose service "$(params.deployment-name)"
+            fi
+            oc rollout status "deployment/$(params.deployment-name)"
