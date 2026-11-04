@@ -3,6 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: counter-service-workspace
 spec:
+  storageClassName: skills-network-learner
   accessModes:
     - ReadWriteOnce
   resources:
