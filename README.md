@@ -26,12 +26,10 @@ workspace used by the pipeline. The lab's OpenShift cluster is needed to apply
 and run these resources.
 
 The pipeline accepts a Git repository URL and an image destination as
-parameters. A private GitHub repository also needs a Git authentication secret
-available to the `git-clone` task in the lab cluster. Credentials are not stored
-in this repository.
+parameters. This repository is public so the lab's `git-clone` task can fetch it.
+No credentials are stored in the repository.
 
-After cloning the repository in the course Cloud IDE and configuring private
-Git access for the pipeline service account, run:
+After cloning the repository in the course Cloud IDE, run:
 
 ```bash
 bash bin/run-lab-pipeline.sh

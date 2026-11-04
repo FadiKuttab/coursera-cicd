@@ -22,7 +22,6 @@ CICD_IMAGE_URL="${CICD_IMAGE_URL:-image-registry.openshift-image-registry.svc:50
 echo "Project: $CICD_NAMESPACE"
 echo "Repository: $CICD_REPO_URL"
 echo "Image: $CICD_IMAGE_URL"
-echo "A private repository requires Git authentication for the pipeline service account."
 
 oc apply -f .tekton/tasks.yml
 oc apply -f .tekton/pvc.yml
